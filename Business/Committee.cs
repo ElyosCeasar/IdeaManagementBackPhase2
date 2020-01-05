@@ -46,15 +46,17 @@ namespace Business
         public Result UnVoteIdea(int ideaId, string username)
         {
             if (_repositoryUsers.IsCommitteMember(username))
-                return _repository.UnVoteIdea(ideaId,username);
-                        else
+                return _repository.UnVoteIdea(ideaId, username);
+            else
             {
                 return new Result()
                 {
                     value = false,
                     content = "متاسفانه شما به این امکان دسترسی ندارید"
                 };
-        }
+            }
+
+        } 
         //-------------------------------------------------------------------------------------------------
 
     }

@@ -40,7 +40,7 @@ namespace DataAccess.Query
                     _db.IDEAS.First(x => x.ID == ideaId).STATUS_ID =Convert.ToByte(voteDetailDto.Vote);
                     _db.SaveChanges();
                     res.value = true;
-                    res.content = "رای کیته اعمال شد";
+                    res.content = "رای کمیته اعمال شد";
                 }
                 else
                 {//update it is impossible do to bussines
@@ -52,7 +52,7 @@ namespace DataAccess.Query
                     _db.IDEAS.First(x => x.ID == ideaId).STATUS_ID = Convert.ToByte(voteDetailDto.Vote);
                     _db.SaveChanges();
                     res.value = true;
-                    res.content = "رای کیته اعمال شد";
+                    res.content = "رای کمیته اعمال شد";
                 }
             }
             return res;
