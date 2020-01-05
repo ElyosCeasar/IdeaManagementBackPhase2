@@ -9,6 +9,8 @@ using DataTransferObject.User;
 
 namespace DataAccess.Query
 {
+
+
     public class UserQ
     {
         private IdeaManagmentDatabaseEntities _db;
