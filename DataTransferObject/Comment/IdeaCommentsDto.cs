@@ -14,5 +14,7 @@ namespace DataTransferObject.User
         public int IDEA_ID { get; set; }
         public string COMMENT { get; set; }
         public System.DateTime SAVE_DATE { get; set; }
+
+        public int Points { get; set; }
     }
 }

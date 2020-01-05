@@ -19,16 +19,19 @@ namespace DataAccess.Query
             IEnumerable<IdeaCommentsDto> res=null;
             using (_db = new IdeaManagmentDatabaseEntities())
             {
+
+
                 res = _db.IDEA_COMMENTS.Where(c => c.IDEA_ID == ideaId).Select(x => new IdeaCommentsDto()
                 {
                     ID = x.ID,
                     IDEA_ID =x.IDEA_ID,
                     COMMENT =x.COMMENT,
+                    Points = _db.COMMENT_POINTS.Where(p => p.COMMENT_ID == x.ID).Sum(z=>z.POINT),
                     SAVE_DATE =x.SAVE_DATE,
                     USERNAME =x.USERNAME,
                     FullName =x.USER.FIRST_NAME+" "+x.USER.LAST_NAME
 
-                }).ToList();
+                }).OrderBy(c=>c.Points).ToList();
             }
             return res;
         }
