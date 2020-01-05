@@ -202,107 +202,101 @@ namespace DataAccess.Query
             }
             return res;
         }
-
         //-------------------------------------------------------------------------------------------------
         public IEnumerable<IdeaDto> GetIdeasTop10CurrentMonth()
         {
-            //--------------------
-            int day;
-            var time1 = DateTime.Now;
-            var converted = Persia.Calendar.ConvertToPersian(time1);
-            day = converted.ArrayType[2];
-            time1 = DateTime.Now.AddDays(-day + 1);
+            List<IdeaDto> res = new List<IdeaDto>();
+             //--------------------
+             var now = DateTime.Now;
+            var convertedToShamsi = Persia.Calendar.ConvertToPersian(now);
+            int currentDayOfMonth = convertedToShamsi.ArrayType[2];
+            var startDateDateMonthInMiladi = DateTime.Now.AddDays(-currentDayOfMonth + 1);
 
-
-            if (converted.ArrayType[1] < 7)
-                day = 31 - day;
-            else if (converted.ArrayType[1] < 12)
-                day = 30 - day;
+            int numberOfDaysToEndMonth = 0;
+            //چک کردن ماه 31 روزه 30 روزه و29 روزه
+            if (convertedToShamsi.ArrayType[1] < 7)
+                numberOfDaysToEndMonth = 31 - currentDayOfMonth;/// تعداد روزی که باید بریم جلو تو ماه میلادی
+            else if (convertedToShamsi.ArrayType[1] < 12)
+                numberOfDaysToEndMonth = 30 - currentDayOfMonth; 
             else
-                day = 29 - day;
-            var time2 = DateTime.Now.AddDays(day);
+                numberOfDaysToEndMonth = 29 - currentDayOfMonth; 
+            var finishDateMonthInMiladi = DateTime.Now.AddDays(numberOfDaysToEndMonth);
+
+            startDateDateMonthInMiladi = new DateTime(startDateDateMonthInMiladi.Year, startDateDateMonthInMiladi.Month, startDateDateMonthInMiladi.Day, 23, 59, 59);
+            finishDateMonthInMiladi = new DateTime(finishDateMonthInMiladi.Year, finishDateMonthInMiladi.Month, finishDateMonthInMiladi.Day, 23, 59, 59);
             //--------------------
             using (_db = new IdeaManagmentDatabaseEntities())
             {
-                var point = _db.IDEA_POINTS.GroupBy(x => x.IDEA_ID).Select(y => new
-                {
-                    IDEA_ID = y.Key,
-                    TOTAL_POINT = y.Sum(x => x.POINT)
-                }).Where(z => z.IDEA_ID == _db.IDEAS.FirstOrDefault(w => w.SAVE_DATE >= time1 && w.SAVE_DATE <= time2).ID).OrderByDescending(x => x.TOTAL_POINT).Take(10).ToList();
+                var bestIdeas = _db.IDEA_POINTS.
+                    Where(p => p.IDEA.SAVE_DATE >= startDateDateMonthInMiladi && p.IDEA.SAVE_DATE <= finishDateMonthInMiladi)
+                    .GroupBy(x => x.IDEA_ID)
+                    .Select(y => new
+                    {
+                        IDEA_ID = y.Key,
+                        TOTAL_POINT = y.Sum(x => x.POINT)
+                    }).OrderByDescending(x => x.TOTAL_POINT)
+                .Take(10);
 
-                var q = (from i in _db.IDEAS
-                         join s in _db.IDEA_STATUS on i.STATUS_ID equals s.ID
-                         join u in _db.USERS on i.USERNAME equals u.USERNAME
-                         join p in point on i.ID equals p.IDEA_ID
-                         orderby i.SAVE_DATE descending
-                         select new
-                         {
-                             i.TITLE,
-                             p.TOTAL_POINT,
-                             NAME = u.FIRST_NAME + " " + u.LAST_NAME,
-                             i.USERNAME,
-                             STATUS = s.TITLE,
-                             i.SAVE_DATE
-                         }).ToList();
-
-                return q.Select(x => new IdeaDto()
+                foreach(var x in bestIdeas)
                 {
-                    TITLE = x.TITLE,
-                    TOTAL_POINT = x.TOTAL_POINT,
-                   FullName = x.NAME,
-                    USERNAME = x.USERNAME,
-                    STATUS = x.STATUS,
-                    SAVE_DATE = x.SAVE_DATE
-                }).ToList();
+                    var idea = _db.IDEAS.Single(i => i.ID == x.IDEA_ID);
+                    res.Add(new IdeaDto()
+                    {
+                        TITLE = idea.TITLE,
+                        TOTAL_POINT = x.TOTAL_POINT,
+                        FullName = idea.USER.FIRST_NAME+" "+idea.USER.LAST_NAME,
+                        USERNAME = idea.USERNAME,
+                        STATUS = idea.IDEA_STATUS.TITLE,
+                        SAVE_DATE = idea.SAVE_DATE
+                    });
+                }
+
             }
+            return res;
         }
-
         //-------------------------------------------------------------------------------------------------
         public IEnumerable<IdeaDto> GetIdeasTop10CurrentWeek()
         {
+            List<IdeaDto> res = new List<IdeaDto>();
             //--------------------
-            int day;
-            var time1 = DateTime.Now;
-            var converted = Persia.Calendar.ConvertToPersian(time1);
-            day = converted.DayOfWeek;
-            time1 = DateTime.Now.AddDays(-day + 1);
 
-            var time2 = DateTime.Now.AddDays(7 - day);
+            var currentDate = DateTime.Now;
+            var converted = Persia.Calendar.ConvertToPersian(currentDate);
+            int dayOfWeek = converted.DayOfWeek+1;
+            var startDayOfWeekInMillady = DateTime.Now.AddDays(-dayOfWeek + 1);//اول
+            startDayOfWeekInMillady = new DateTime(startDayOfWeekInMillady.Year, startDayOfWeekInMillady.Month, startDayOfWeekInMillady.Day, 0, 0, 0);
+            var endDayOfWeekInMillady = DateTime.Now.AddDays(7 - dayOfWeek);//آخرش
+            endDayOfWeekInMillady = new DateTime(endDayOfWeekInMillady.Year, endDayOfWeekInMillady.Month, endDayOfWeekInMillady.Day, 23, 59, 59);
             //--------------------
             using (_db = new IdeaManagmentDatabaseEntities())
             {
-                var point = _db.IDEA_POINTS.GroupBy(x => x.IDEA_ID).Select(y => new
+                var bestIdeas = _db.IDEA_POINTS.Where(p => p.IDEA.SAVE_DATE >= startDayOfWeekInMillady && p.IDEA.SAVE_DATE <= endDayOfWeekInMillady)
+                    .GroupBy(x => x.IDEA_ID)
+                    .Select(y => new
                 {
                     IDEA_ID = y.Key,
                     TOTAL_POINT = y.Sum(x => x.POINT)
-                }).Where(z => z.IDEA_ID == _db.IDEAS.FirstOrDefault(w => w.SAVE_DATE >= time1 && w.SAVE_DATE <= time2).ID).OrderByDescending(x => x.TOTAL_POINT).Take(10).ToList();
+                }).OrderByDescending(x => x.TOTAL_POINT).Take(10);
 
-                var q = (from i in _db.IDEAS
-                         join s in _db.IDEA_STATUS on i.STATUS_ID equals s.ID
-                         join u in _db.USERS on i.USERNAME equals u.USERNAME
-                         join p in point on i.ID equals p.IDEA_ID
-                         orderby i.SAVE_DATE descending
-                         select new
-                         {
-                             i.TITLE,
-                             p.TOTAL_POINT,
-                             NAME = u.FIRST_NAME + " " + u.LAST_NAME,
-                             i.USERNAME,
-                             STATUS = s.TITLE,
-                             i.SAVE_DATE
-                         }).ToList();
-
-                return q.Select(x => new IdeaDto()
+                foreach (var x in bestIdeas)
                 {
-                    TITLE = x.TITLE,
-                    TOTAL_POINT = x.TOTAL_POINT,
-                    FullName = x.NAME,
-                    USERNAME = x.USERNAME,
-                    STATUS = x.STATUS,
-                    SAVE_DATE = x.SAVE_DATE
-                }).ToList();
+                    var idea = _db.IDEAS.Single(i => i.ID == x.IDEA_ID);
+                    res.Add(new IdeaDto()
+                    {
+                        TITLE = idea.TITLE,
+                        TOTAL_POINT = x.TOTAL_POINT,
+                        FullName = idea.USER.FIRST_NAME + " " + idea.USER.LAST_NAME,
+                        USERNAME = idea.USERNAME,
+                        STATUS = idea.IDEA_STATUS.TITLE,
+                        SAVE_DATE = idea.SAVE_DATE
+                    });
+                }
+
             }
+            return res;
         }
+        //-------------------------------------------------------------------------------------------------
+
 
         public bool IsIdeaLocked(int id)
         {

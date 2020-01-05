@@ -70,7 +70,7 @@ namespace Business
                 vote.POINT = 0;
             }
 
-            if (_RepositoryIdea.IsIdeaLocked(vote.IDEA_ID))
+            if (_RepositoryIdea.IsIdeaLocked(_Repository.GetIdeaIdByCommentId(vote.COMMENT_ID)))
             {
                 return new Result()
                 {

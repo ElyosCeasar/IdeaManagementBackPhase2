@@ -117,7 +117,7 @@ namespace DataAccess.Query
 
             using (_db = new IdeaManagmentDatabaseEntities())
             {
-                var comment_point = _db.COMMENT_POINTS.FirstOrDefault(x => x.COMMENT_ID == voteDetail.COMMENT_ID && x.USERNAME == voteDetail.USERNAME);
+                var comment_point = _db.COMMENT_POINTS.FirstOrDefault(x => x.COMMENT_ID == voteDetail.COMMENT_ID && x.USERNAME == voteDetail.USERNAME_voter);
                 if (comment_point == null)
                 {
                     var comment = _db.IDEA_COMMENTS.FirstOrDefault(x => x.ID == voteDetail.COMMENT_ID);
@@ -127,14 +127,14 @@ namespace DataAccess.Query
                         result.content = "پیشنهادی  با این مشخصات وجود ندارد";
                         return result;
                     }
-                    var user = _db.USERS.FirstOrDefault(x => x.USERNAME == voteDetail.USERNAME);
+                    var user = _db.USERS.FirstOrDefault(x => x.USERNAME == voteDetail.USERNAME_voter);
                     if (user == null)
                     {
                         result.value = false;
                         result.content = "کاربر پیدا نشد";
                         return result;
                     };
-                    if (comment.USERNAME == voteDetail.USERNAME)
+                    if (comment.USERNAME == voteDetail.USERNAME_voter)
                     {
                         result.value = false;
                         result.content = "به پیشنهاد خود نمی توان رای داد";
@@ -145,7 +145,8 @@ namespace DataAccess.Query
                     {
                         COMMENT_ID = voteDetail.COMMENT_ID,
                         SAVE_DATE = DateTime.Now,
-                        POINT = voteDetail.POINT
+                        POINT = voteDetail.POINT,
+                        USERNAME= voteDetail.USERNAME_voter
                     };
 
                     _db.COMMENT_POINTS.Add(comment_point2);
@@ -162,6 +163,19 @@ namespace DataAccess.Query
                 result.content = "امتیاز پیشنهاداصلاح شد";
                 return result;
             }
+        }
+
+        public int GetIdeaIdByCommentId(int commentId)
+        {
+            int res = -1;
+            using (_db = new IdeaManagmentDatabaseEntities())
+            {
+                var comment = _db.IDEA_COMMENTS.FirstOrDefault(c=>c.ID==commentId);
+                if (comment != null)
+                    res = comment.IDEA_ID;
+                
+            }
+            return res;
         }
 
 
