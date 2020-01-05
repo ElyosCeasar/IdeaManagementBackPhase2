@@ -55,6 +55,7 @@
     <Compile Include="Auth\UserForRegistrationDto.cs" />
     <Compile Include="Comment\CommentDto.cs" />
     <Compile Include="Comment\VoteToCommentDto.cs" />
+    <Compile Include="Committee\VoteDetailDto.cs" />
     <Compile Include="Common\Result.cs" />
     <Compile Include="Idea\ChangedIdeaDto.cs" />
     <Compile Include="Idea\IdeaDetailForShowDto.cs" />

@@ -113,6 +113,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\AuthQ.cs" />
     <Compile Include="Query\CommentQ.cs" />
+    <Compile Include="Query\CommitteeQ.cs" />
     <Compile Include="Query\IdeaQ.cs" />
     <Compile Include="Query\UserQ.cs" />
   </ItemGroup>
